@@ -3,7 +3,13 @@
 #define __lcd_ste2007__
 
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/mpu_wrappers.h"
+#include "freertos/semphr.h"
 #include <stdint.h>
+#include <string.h>
 
 #if CONFIG_IDF_TARGET_ESP32
  #include <esp32/rom/ets_sys.h> // for ets_delay_us()
@@ -16,7 +22,7 @@
 #include <fonts_18x32.h> // mostly for clocks
 #include <fonts_16x24.h> // 6 digits not stretched, 3 stretched
 
-#include <generic_constants.h> // just for tests
+//#include <generic_constants.h> // just for tests
 
 /*******************************************************************************************
 * usage:
@@ -83,6 +89,8 @@ template<class T> void Lcd2007_T<T>::write(uint8_t dc, uint8_t data){
 
 template<class T> void Lcd2007_T<T>::init(){
 
+    //sht = someClass::someConst2;
+
     gpio_config_t tmp_io_conf{
         .pin_bit_mask = ((1ULL<<T::nokia_clk) | (1ULL<<T::nokia_din) | (1ULL<<T::nokia_rst)),
         .mode         = GPIO_MODE_OUTPUT,
@@ -101,8 +109,6 @@ template<class T> void Lcd2007_T<T>::init(){
     gpio_set_level(T::nokia_rst,1);
     vTaskDelay(10 / portTICK_RATE_MS);
 
-    sht = someClass::someConst2;
-   
     write(cmd,INTERNAL_RESET);
     vTaskDelay(10 / portTICK_RATE_MS);
     write(cmd,0xA4);  //Display all points OFF
